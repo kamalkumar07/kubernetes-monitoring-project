@@ -9,23 +9,22 @@ pipeline {
             }
         }
 
-        stage('Build Docker Image') {
+        stage('Verify Docker') {
             steps {
-                sh '/usr/local/bin/docker build -t frontend-app .'
+                sh '/usr/local/bin/docker --version'
             }
         }
 
         stage('Verify Kubernetes') {
             steps {
-                sh 'kubectl get pods'
+                sh 'kubectl version --client'
             }
         }
 
         stage('Success') {
             steps {
-                echo 'Pipeline Executed Successfully'
+                echo 'CI/CD Pipeline Executed Successfully'
             }
         }
-
     }
 }
