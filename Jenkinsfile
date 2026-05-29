@@ -1,21 +1,25 @@
-stages {
+pipeline {
+    agent any
 
-    stage('Git Checkout') {
-        steps {
-            echo 'Fetching source code...'
+    stages {
+
+        stage('Git Checkout') {
+            steps {
+                echo 'Fetching source code...'
+            }
         }
-    }
 
-    stage('Build Docker Image') {
-        steps {
-            sh 'docker build -t frontend-app .'
+        stage('Build Docker Image') {
+            steps {
+                sh 'docker build -t frontend-app .'
+            }
         }
-    }
 
-    stage('Verify Kubernetes') {
-        steps {
-            sh 'kubectl get pods'
+        stage('Verify Kubernetes') {
+            steps {
+                sh 'kubectl get pods'
+            }
         }
-    }
 
+    }
 }
