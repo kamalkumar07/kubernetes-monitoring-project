@@ -17,7 +17,7 @@ pipeline {
 
         stage('Verify Kubernetes') {
             steps {
-                sh 'kubectl version --client'
+               sh '/opt/homebrew/bin/kubectl version --clinet'
             }
         }
 
