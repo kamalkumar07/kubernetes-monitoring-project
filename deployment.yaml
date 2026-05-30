@@ -3,6 +3,7 @@ kind: Deployment
 
 metadata:
   name: frontend-deployment
+  namespace: monitoring-project
 
 spec:
   replicas: 2
@@ -19,8 +20,8 @@ spec:
     spec:
       containers:
       - name: frontend-app
-        image: frontend-app
-        imagePullPolicy: Never
+        image: kamal7b/frontend-app:v1
 
         ports:
         - containerPort: 3000
+
