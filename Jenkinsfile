@@ -15,16 +15,20 @@ pipeline {
             }
         }
 
-        stage('Build Docker Image') {
-            steps {
-                sh '''
-                /usr/local/bin/docker buildx build \
-                --platform linux/amd64 \
-                -t $IMAGE_NAME:$IMAGE_TAG \
-                --load .
-                '''
-            }
-        }
+       stage('Build Docker Image') {
+    steps {
+        sh '''
+        export PATH=/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin
+
+        docker-credential-desktop version || true
+
+        /usr/local/bin/docker buildx build \
+        --platform linux/amd64 \
+        -t $IMAGE_NAME:$IMAGE_TAG \
+        --load .
+        '''
+    }
+}
 
         stage('Push Docker Image') {
             steps {
