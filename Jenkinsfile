@@ -1,42 +1,67 @@
 pipeline {
     agent any
-environment {
-    PATH = "/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin"
-}
+
+    environment {
+        PATH = "/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+        IMAGE_NAME = "kamal7b/frontend-app"
+        IMAGE_TAG = "${BUILD_NUMBER}"
+    }
 
     stages {
 
-        stage('Verify Docker') {
+        stage('Checkout') {
             steps {
-                sh '/usr/local/bin/docker --version'
+                checkout scm
             }
         }
 
-        stage('Verify Kubernetes') {
-    steps {
-        sh '''
-        export PATH=$PATH:/opt/homebrew/bin
-        /opt/homebrew/bin/aws sts get-caller-identity
-        /opt/homebrew/bin/kubectl get nodes
-        '''
+        stage('Build Docker Image') {
+            steps {
+                sh '''
+                /usr/local/bin/docker buildx build \
+                --platform linux/amd64 \
+                -t $IMAGE_NAME:$IMAGE_TAG \
+                --load .
+                '''
+            }
+        }
+
+        stage('Push Docker Image') {
+            steps {
+                withCredentials([
+                    usernamePassword(
+                        credentialsId: 'dockerhub-creds',
+                        usernameVariable: 'DOCKER_USER',
+                        passwordVariable: 'DOCKER_PASS'
+                    )
+                ]) {
+
+                    sh '''
+                    echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
+
+                    docker push $IMAGE_NAME:$IMAGE_TAG
+                    '''
+                }
+            }
+        }
+
+        stage('Deploy To EKS') {
+            steps {
+                sh '''
+                kubectl set image deployment/frontend-deployment \
+                frontend-app=$IMAGE_NAME:$IMAGE_TAG \
+                -n monitoring-project
+
+                kubectl rollout status deployment/frontend-deployment \
+                -n monitoring-project
+                '''
+            }
+        }
     }
-}
 
-        stage('Verify Deployment') {
-            steps {
-               sh '''
-
-        export PATH=$PATH:/opt/homebrew/bin
- /opt/homebrew/bin/kubectl get pods -n monitoring-project
- '''
-
-            }
-        }
-
-        stage('Success') {
-            steps {
-                echo 'Jenkins connected to EKS successfully!'
-            }
+    post {
+        success {
+            echo 'Deployment Successful!'
         }
     }
 }
