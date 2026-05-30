@@ -31,37 +31,39 @@ pipeline {
 }
 
         stage('Push Docker Image') {
-            steps {
-                withCredentials([
-                    usernamePassword(
-                        credentialsId: 'dockerhub-creds',
-                        usernameVariable: 'DOCKER_USER',
-                        passwordVariable: 'DOCKER_PASS'
-                    )
-                ]) {
+    steps {
+        withCredentials([
+            usernamePassword(
+                credentialsId: 'dockerhub-creds',
+                usernameVariable: 'DOCKER_USER',
+                passwordVariable: 'DOCKER_PASS'
+            )
+        ]) {
+            sh '''
+            export PATH=/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin
 
-                    sh '''
-                    echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
+            echo $DOCKER_PASS | /usr/local/bin/docker login -u $DOCKER_USER --password-stdin
 
-                    docker push $IMAGE_NAME:$IMAGE_TAG
-                    '''
-                }
-            }
-        }
-
-        stage('Deploy To EKS') {
-            steps {
-                sh '''
-                kubectl set image deployment/frontend-deployment \
-                frontend-app=$IMAGE_NAME:$IMAGE_TAG \
-                -n monitoring-project
-
-                kubectl rollout status deployment/frontend-deployment \
-                -n monitoring-project
-                '''
-            }
+            /usr/local/bin/docker push $IMAGE_NAME:$IMAGE_TAG
+            '''
         }
     }
+}
+
+        stage('Deploy To EKS') {
+    steps {
+        sh '''
+        export PATH=/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin
+
+        /opt/homebrew/bin/kubectl set image deployment/frontend-deployment \
+        frontend-app=$IMAGE_NAME:$IMAGE_TAG \
+        -n monitoring-project
+
+        /opt/homebrew/bin/kubectl rollout status deployment/frontend-deployment \
+        -n monitoring-project
+        '''
+    }
+}
 
     post {
         success {
