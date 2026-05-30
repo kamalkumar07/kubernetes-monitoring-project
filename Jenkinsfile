@@ -1,5 +1,8 @@
 pipeline {
     agent any
+environment {
+    PATH = "/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+}
 
     stages {
 
@@ -21,7 +24,12 @@ pipeline {
 
         stage('Verify Deployment') {
             steps {
-                sh '/opt/homebrew/bin/kubectl get pods -n monitoring-project'
+               sh '''
+
+        export PATH=$PATH:/opt/homebrew/bin
+ /opt/homebrew/bin/kubectl get pods -n monitoring-project
+ '''
+
             }
         }
 
