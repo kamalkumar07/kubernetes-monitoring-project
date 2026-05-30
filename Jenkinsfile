@@ -10,10 +10,14 @@ pipeline {
         }
 
         stage('Verify Kubernetes') {
-            steps {
-                sh '/opt/homebrew/bin/kubectl get nodes'
-            }
-        }
+    steps {
+        sh '''
+        export PATH=$PATH:/opt/homebrew/bin
+        /opt/homebrew/bin/aws sts get-caller-identity
+        /opt/homebrew/bin/kubectl get nodes
+        '''
+    }
+}
 
         stage('Verify Deployment') {
             steps {
